@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14232B">
+<title>Vehicle Entry</title>
+<style>
+  :root {
+    --bg: #E9EDEF;
+    --card: #FFFFFF;
+    --ink: #14232B;
+    --muted: #5B6B73;
+    --line: #C9D2D6;
+    --accent: #1856C4;
+    --ok: #1E7B3A;
+    --warn: #9A5B00;
+    --err: #B3261E;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  header { background: var(--ink); color: #fff; padding: 18px 20px; }
+  header h1 { margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: .2px; }
+  header p { margin: 2px 0 0; font-size: .85rem; color: #A9BAC2; }
+  main { max-width: 520px; margin: 0 auto; padding: 16px; }
+  form { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+  .field { margin-bottom: 14px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 5px; }
+  input {
+    width: 100%; font: inherit; font-size: 1.05rem; padding: 12px;
+    border: 1.5px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink);
+  }
+  input:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+  #veh { text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+  #mt { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; padding: 10px 12px; }
+  .hint { font-size: .78rem; color: var(--muted); margin-top: 4px; min-height: 1em; }
+  .hint.bad { color: var(--err); }
+  button.primary {
+    width: 100%; font: inherit; font-size: 1.1rem; font-weight: 700; padding: 15px;
+    border: 0; border-radius: 8px; background: var(--accent); color: #fff; cursor: pointer;
+  }
+  button.primary:disabled { opacity: .6; cursor: progress; }
+  #status { margin: 12px 0 0; padding: 10px 12px; border-radius: 8px; font-size: .92rem; display: none; }
+  #status.show { display: block; }
+  #status.ok { background: #E3F3E8; color: var(--ok); }
+  #status.err { background: #FBE7E5; color: var(--err); }
+  #status.warn { background: #FFF1D6; color: var(--warn); }
+  #status button { margin-left: 8px; font: inherit; font-weight: 600; border: 1.5px solid currentColor; background: transparent; color: inherit; border-radius: 6px; padding: 3px 9px; cursor: pointer; }
+  h2 { font-size: 1rem; margin: 22px 0 8px; }
+  .list { background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .item { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 10px 14px; border-top: 1px solid var(--line); font-size: .92rem; }
+  .item:first-child { border-top: 0; }
+  .item b { font-weight: 700; }
+  .item .sub { color: var(--muted); font-size: .8rem; }
+  .item .mt { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .item .tag { text-align: right; font-size: .75rem; font-weight: 600; }
+  .tag.sent { color: var(--ok); } .tag.pending { color: var(--warn); }
+  .empty { padding: 16px; color: var(--muted); font-size: .9rem; }
+  @media (prefers-reduced-motion: no-preference) { button.primary { transition: opacity .15s; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Vehicle Entry</h1>
+  <p>Saves straight to the Google Sheet</p>
+</header>
+
+<main>
+  <form id="f" autocomplete="off" novalidate>
+    <div class="field">
+      <label for="veh">Vehicle number</label>
+      <input id="veh" name="veh" inputmode="text" autocapitalize="characters" placeholder="TN 32 AB 1234" required>
+    </div>
+    <div class="field">
+      <label for="invoice">Invoice number</label>
+      <input id="invoice" name="invoice" inputmode="text" required>
+      <div class="hint" id="invHint"></div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="date">Date</label>
+        <input id="date" name="date" type="date" required>
+      </div>
+      <div class="field">
+        <label for="time">Time</label>
+        <input id="time" name="time" type="time" required>
+      </div>
+    </div>
+    <div class="field">
+      <label for="mt">Quantity (MT)</label>
+      <input id="mt" name="mt" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0.00" required>
+    </div>
+    <button class="primary" id="save" type="submit">Save entry</button>
+    <div id="status" role="status" aria-live="polite"></div>
+  </form>
+
+  <h2>Entered on this device</h2>
+  <div class="list" id="recent"></div>
+</main>
+
+<script>
+/* ====== SET THIS after deploying Code.gs as a web app ====== */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuJASoLxHhHhdaR55VOuOQWqX2Q0GY7FrYFq-Ii9-Rz1Az15FBmvX3i_LAlzT_OI0y/exec";
+/* ========================================================== */
+
+const $ = id => document.getElementById(id);
+const LS_RECENT = "veh_recent_v1";
+const LS_CODE   = "veh_code_v1";
+
+const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+let recent = load(LS_RECENT, []);   // [{veh, invoice, date, time, mt, sent, id}]
+
+function nowDefaults() {
+  const d = new Date(), p = n => String(n).padStart(2, "0");
+  $("date").value = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  $("time").value = `${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+function show(msg, kind, actionLabel, action) {
+  const s = $("status");
+  s.className = "show " + kind;
+  s.textContent = msg;
+  if (actionLabel) {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = actionLabel; b.onclick = action;
+    s.appendChild(b);
+  }
+}
+const hide = () => { $("status").className = ""; };
+
+function fmtDate(iso) { const [y, m, d] = iso.split("-"); return `${d}-${m}-${y}`; }
+
+function render() {
+  const box = $("recent");
+  box.textContent = "";
+  if (!recent.length) { box.innerHTML = '<div class="empty">No entries yet.</div>'; return; }
+  recent.slice(0, 15).forEach(r => {
+    const el = document.createElement("div");
+    el.className = "item";
+    const l = document.createElement("div");
+    const b = document.createElement("b"); b.textContent = r.veh;
+    const sub = document.createElement("div"); sub.className = "sub";
+    sub.textContent = `Inv ${r.invoice} · ${fmtDate(r.date)} ${r.time}`;
+    l.append(b, sub);
+    const rt = document.createElement("div");
+    const mt = document.createElement("div"); mt.className = "mt"; mt.textContent = Number(r.mt).toFixed(2) + " MT";
+    const tag = document.createElement("div");
+    tag.className = "tag " + (r.sent ? "sent" : "pending");
+    tag.textContent = r.sent ? "Saved" : "Not sent yet";
+    rt.append(mt, tag);
+    el.append(l, rt);
+    box.appendChild(el);
+  });
+}
+
+async function send(entry, allowDuplicate) {
+  const payload = { ...entry, code: load(LS_CODE, ""), allowDuplicate: !!allowDuplicate };
+  const res = await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+  return res.json();
+}
+
+async function submitEntry(entry, allowDuplicate) {
+  const btn = $("save");
+  btn.disabled = true; btn.textContent = "Saving…";
+  try {
+    const r = await send(entry, allowDuplicate);
+    if (r.ok) {
+      entry.sent = true; save(LS_RECENT, recent); render();
+      show(`Saved to the sheet (row ${r.row}).`, "ok");
+      $("f").reset(); nowDefaults(); $("veh").focus();
+      return;
+    }
+    if (r.error === "unauthorized") {
+      const c = prompt("Enter the access code");
+      if (c) { save(LS_CODE, c); return submitEntry(entry, allowDuplicate); }
+      show("Access code needed.", "err");
+    } else if (r.error === "duplicate") {
+      // remove the unsent copy, offer a deliberate override
+      show(r.message || "This invoice is already in the sheet.", "warn", "Save anyway", () => submitEntry(entry, true));
+    } else {
+      show(r.error || "The sheet rejected this entry.", "err");
+      dropIfUnsent(entry);
+    }
+  } catch (e) {
+    show("No connection. The entry is kept on this device.", "warn", "Retry", retryPending);
+    $("f").reset(); nowDefaults();
+  } finally {
+    btn.disabled = false; btn.textContent = "Save entry";
+  }
+}
+
+function dropIfUnsent(entry) {
+  recent = recent.filter(x => x !== entry); save(LS_RECENT, recent); render();
+}
+
+async function retryPending() {
+  const pend = recent.filter(r => !r.sent).reverse();
+  if (!pend.length) return;
+  let done = 0;
+  for (const r of pend) {
+    try {
+      const x = await send(r, false);
+      if (x.ok) { r.sent = true; done++; }
+      else if (x.error === "duplicate") { r.sent = true; done++; }  // already in sheet
+    } catch { break; }
+  }
+  save(LS_RECENT, recent); render();
+  if (done) show(`${done} pending entr${done > 1 ? "ies" : "y"} saved.`, "ok");
+}
+
+$("f").addEventListener("submit", e => {
+  e.preventDefault(); hide();
+  if (SCRIPT_URL.startsWith("PASTE_")) { show("Set SCRIPT_URL in index.html first.", "err"); return; }
+
+  const entry = {
+    veh: $("veh").value.trim().toUpperCase(),
+    invoice: $("invoice").value.trim(),
+    date: $("date").value,
+    time: $("time").value,
+    mt: parseFloat($("mt").value)
+  };
+  if (!entry.veh || !entry.invoice || !entry.date || !entry.time || !(entry.mt >= 0)) {
+    show("Fill in all five fields.", "err"); return;
+  }
+  const dup = recent.find(r => r.invoice === entry.invoice);
+  if (dup && !confirm(`Invoice ${entry.invoice} was already entered on this device (${dup.veh}). Add again?`)) return;
+
+  entry.sent = false;
+  recent.unshift(entry);
+  recent = recent.slice(0, 50);
+  save(LS_RECENT, recent); render();
+  submitEntry(entry, false);
+});
+
+$("invoice").addEventListener("input", () => {
+  const v = $("invoice").value.trim();
+  const hit = v && recent.find(r => r.invoice === v);
+  $("invHint").textContent = hit ? "Already entered on this device" : "";
+  $("invHint").className = "hint" + (hit ? " bad" : "");
+});
+
+window.addEventListener("online", retryPending);
+nowDefaults(); render(); retryPending();
+</script>
+</body>
+</html>
