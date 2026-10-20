@@ -30,7 +30,7 @@ input,select{width:100%;font:inherit;font-size:1.02rem;padding:11px;border:1.5px
 .row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px;cursor:pointer}
 .row.p{border-style:dashed;cursor:default}
 .row b{font-size:1rem}.sub{font-size:.8rem;color:var(--muted);overflow-wrap:anywhere}.r{text-align:right}.r b{font-variant-numeric:tabular-nums}
-.tag{font-size:.7rem;font-weight:700;color:var(--muted)}.tag.p{color:var(--warn)}
+.tag{font-size:.7rem;font-weight:700;color:var(--muted)}.tag.p{color:var(--warn)}.tag.x{color:var(--err)}.seg.two{grid-template-columns:1fr 1fr;margin-bottom:8px}
 .empty{text-align:center;color:var(--muted);padding:20px}
 dialog{border:0;border-radius:12px;padding:16px;width:min(520px,94vw);max-height:94vh}dialog::backdrop{background:rgba(0,0,0,.5)}
 .acts{display:flex;gap:8px;margin-top:14px}.acts .b{flex:1}
@@ -46,6 +46,7 @@ dialog{border:0;border-radius:12px;padding:16px;width:min(520px,94vw);max-height
   <div class="g2"><div><label for="date">Date</label><input id="date" type="date"></div><div><label for="time">Time</label><input id="time" type="time"></div></div>
   <button class="primary" id="save">Save entry</button><div id="st" role="status" aria-live="polite"></div>
 </div>
+<div class="seg two" id="vw"><button type="button" data-v="cur" aria-pressed="true">Current entries</button><button type="button" data-v="his" aria-pressed="false">History</button></div>
 <div class="bar"><input id="q" type="search" placeholder="Search vehicle, invoice, name…"><select id="per"><option value="7">Last 7 days</option><option value="0">Today</option><option value="all">All entries</option></select></div>
 <p class="sum" id="sum"></p><div id="list"></div><button class="b g" id="more" style="width:100%" hidden>Show more</button>
 </main>
@@ -65,7 +66,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuJASoLxHhHhdaR55VO
 /* ========================================================================= */
 const $=id=>document.getElementById(id),p2=n=>String(n).padStart(2,"0"),MV=["LOADING","UNLOADING","SHIFTING"];
 const ld=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
-let items=ld("v2_items",[]),pend=ld("v2_pend",[]),shown=40,editing=null;
+let items=ld("v2_items",[]),pend=ld("v2_pend",[]),hist=ld("v2_hist",[]),view="cur",shown=40,editing=null;
 function el(t,c,x){const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function seg(box,def){let v=def;const bs=MV.map(m=>{const b=el("button","",m[0]+m.slice(1).toLowerCase());b.type="button";b.onclick=()=>set(m);box.appendChild(b);return[m,b]});
   const set=m=>{v=m;bs.forEach(([k,b])=>b.setAttribute("aria-pressed",k===m))};set(def);return{get:()=>v,set}}
@@ -74,7 +75,7 @@ const today=()=>{const d=new Date();return`${d.getFullYear()}-${p2(d.getMonth()+
 const fd=s=>{const[y,m,d]=s.split("-");return`${d}-${m}-${y}`},kg=n=>Number(n).toLocaleString("en-IN",{maximumFractionDigits:2});
 function msg(m,k,l,f){const s=$("st");s.className="show "+k;s.textContent=m;if(l){const b=el("button","b g",l);b.type="button";b.onclick=f;s.appendChild(b)}}
 async function call(method,payload){const code=ld("v2_code","");let url=SCRIPT_URL,o={method};
-  if(method==="GET")url+="?action=list&code="+encodeURIComponent(code);else o.body=JSON.stringify({...payload,code});
+  if(method==="GET")url+="?action="+(payload||"list")+"&code="+encodeURIComponent(code);else o.body=JSON.stringify({...payload,code});
   const r=await(await fetch(url,o)).json();
   if(r.error==="unauthorized"){const c=prompt("Enter the access code");if(c){sv("v2_code",c);return call(method,payload)}}return r}
 function fields(p){return{name:$(p+"name").value,veh:$(p+"veh").value,inv:$(p+"inv").value,kg:$(p+"kg").value,date:$(p+"date").value,time:$(p+"time").value}}
@@ -83,12 +84,13 @@ function resetForm(){["name","veh","inv","kg"].forEach(k=>$(k).value="");$("date
 async function refresh(q){
   if(SCRIPT_URL.startsWith("PASTE_")){msg("Set SCRIPT_URL in index.html first.","err");return}
   try{await flush();const r=await call("GET");
-    if(r.ok){items=r.items;sv("v2_items",items);$("sync").textContent="Synced "+nowT();render()}else if(!q)msg(r.error||"Could not load.","err")}
+    if(r.ok){items=r.items;sv("v2_items",items);$("sync").textContent="Synced "+nowT();if(view==="his")await loadHist();render()}else if(!q)msg(r.error||"Could not load.","err")}
   catch{$("sync").textContent="Offline, showing saved copy"}}
 async function flush(){if(!pend.length)return;let n=0;
   for(const p of pend.slice()){try{const r=await call("POST",{action:"add",...p,allowDuplicate:true});if(r.ok){pend=pend.filter(x=>x!==p);n++}else if(r.error&&r.error!=="duplicate")break}catch{break}}
   sv("v2_pend",pend);if(n)msg(n+" waiting "+(n>1?"entries":"entry")+" saved.","ok")}
 function render(){
+  if(view==="his")return renderHist();
   const names=[...new Set(items.map(i=>i.name).filter(Boolean))].sort();$("names").textContent="";names.forEach(n=>{const o=el("option");o.value=n;$("names").appendChild(o)});
   const per=$("per").value,q=$("q").value.trim().toLowerCase(),t0=new Date();t0.setHours(0,0,0,0);
   let l=pend.map(p=>({...p,pend:1})).concat(items);
@@ -105,6 +107,23 @@ function render(){
     if(!i.pend)r.onclick=()=>openEdit(i);box.appendChild(r)});
   $("more").hidden=l.length<=shown}
 $("more").onclick=()=>{shown+=40;render()};$("q").oninput=()=>{shown=40;render()};$("per").onchange=()=>{shown=40;render()};
+async function loadHist(){try{const r=await call("GET","history");if(r.ok){hist=r.history;sv("v2_hist",hist)}else msg(r.error||"Could not load history.","err")}catch{}}
+function renderHist(){
+  const live=new Set(items.map(i=>i.id)),by={};
+  hist.slice().sort((a,b)=>a.when.localeCompare(b.when)).forEach(e=>{const g=by[e.id]||(by[e.id]={added:e.when,edited:false,last:e});if(e.action==="EDIT")g.edited=true;g.last=e});
+  const per=$("per").value,q=$("q").value.trim().toLowerCase(),t0=new Date();t0.setHours(0,0,0,0);
+  let l=Object.entries(by).map(([id,g])=>({...g.last,id,added:g.added,st:live.has(id)?(g.edited?"Edited":"In sheet"):"Deleted"}));
+  if(per!=="all"){const from=new Date(+t0-Number(per)*864e5);l=l.filter(i=>new Date(i.date+"T00:00")>=from)}
+  if(q)l=l.filter(i=>[i.veh,i.inv,i.name,i.mv].join(" ").toLowerCase().includes(q));
+  l.sort((a,b)=>b.added.localeCompare(a.added));
+  const del=l.filter(i=>i.st==="Deleted").length;
+  $("sum").textContent=l.length?`${l.length} additions on record`+(del?` · ${del} deleted from the sheet`:""):"";
+  const box=$("list");box.textContent="";if(!l.length)box.appendChild(el("div","empty","No history yet."));
+  l.slice(0,shown).forEach(i=>{const r=el("div","row"),a=el("div"),b=el("div","r"),ad=new Date(i.added);r.style.cursor="default";
+    a.append(el("b","",i.veh+(i.name?" · "+i.name:"")),el("div","sub",`${fd(i.date)} ${i.time}${i.inv?" · Inv "+i.inv:""} · ${i.mv}`),el("div","sub",`Added ${fd(ad.getFullYear()+"-"+p2(ad.getMonth()+1)+"-"+p2(ad.getDate()))} ${p2(ad.getHours())}:${p2(ad.getMinutes())}`));
+    b.append(el("b","",kg(i.kg)+" kg"),el("div","tag"+(i.st==="Deleted"?" x":""),i.st));r.append(a,b);box.appendChild(r)});
+  $("more").hidden=l.length<=shown}
+$("vw").onclick=async e=>{const b=e.target.closest("button");if(!b)return;view=b.dataset.v;[...$("vw").children].forEach(x=>x.setAttribute("aria-pressed",x===b));shown=40;render();if(view==="his"){await loadHist();render()}};
 async function submit(){
   $("st").className="";if(SCRIPT_URL.startsWith("PASTE_")){msg("Set SCRIPT_URL in index.html first.","err");return}
   const f=fields("");if(!valid(f,m=>msg(m,"err")))return;const e={...f,mv:sMain.get()};sv("v2_mv",e.mv);
@@ -125,7 +144,7 @@ async function edit(allow){const f=fields("e_");if(!valid(f,m=>$("e_st").textCon
     else $("e_st").textContent=r.error||"Could not save."}
   catch{$("e_st").textContent="No connection. Try again."}$("e_s").disabled=false}
 $("e_s").onclick=()=>edit(false);
-$("e_d").onclick=async()=>{if(!confirm(`Delete ${editing.veh} (${fd(editing.date)} ${editing.time}, ${kg(editing.kg)} kg)? This removes the row from the sheet.`))return;
+$("e_d").onclick=async()=>{if(!confirm(`Delete ${editing.veh} (${fd(editing.date)} ${editing.time}, ${kg(editing.kg)} kg)? This removes the row from the sheet, but it stays in History.`))return;
   $("e_d").disabled=true;try{const r=await call("POST",{action:"delete",id:editing.id});
     if(r.ok||/not found/i.test(r.error||"")){items=items.filter(x=>x.id!==editing.id);sv("v2_items",items);$("dlg").close();render()}else $("e_st").textContent=r.error||"Could not delete."}
   catch{$("e_st").textContent="No connection. Try again."}$("e_d").disabled=false};
