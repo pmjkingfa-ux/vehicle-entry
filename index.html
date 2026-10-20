@@ -1,254 +1,136 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#14232B">
 <title>Vehicle Entry</title>
 <style>
-  :root {
-    --bg: #E9EDEF;
-    --card: #FFFFFF;
-    --ink: #14232B;
-    --muted: #5B6B73;
-    --line: #C9D2D6;
-    --accent: #1856C4;
-    --ok: #1E7B3A;
-    --warn: #9A5B00;
-    --err: #B3261E;
-  }
-  * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
-  body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
-    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
-  }
-  header { background: var(--ink); color: #fff; padding: 18px 20px; }
-  header h1 { margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: .2px; }
-  header p { margin: 2px 0 0; font-size: .85rem; color: #A9BAC2; }
-  main { max-width: 520px; margin: 0 auto; padding: 16px; }
-  form { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
-  .field { margin-bottom: 14px; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 5px; }
-  input {
-    width: 100%; font: inherit; font-size: 1.05rem; padding: 12px;
-    border: 1.5px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink);
-  }
-  input:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
-  #veh { text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-  #mt { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; padding: 10px 12px; }
-  .hint { font-size: .78rem; color: var(--muted); margin-top: 4px; min-height: 1em; }
-  .hint.bad { color: var(--err); }
-  button.primary {
-    width: 100%; font: inherit; font-size: 1.1rem; font-weight: 700; padding: 15px;
-    border: 0; border-radius: 8px; background: var(--accent); color: #fff; cursor: pointer;
-  }
-  button.primary:disabled { opacity: .6; cursor: progress; }
-  #status { margin: 12px 0 0; padding: 10px 12px; border-radius: 8px; font-size: .92rem; display: none; }
-  #status.show { display: block; }
-  #status.ok { background: #E3F3E8; color: var(--ok); }
-  #status.err { background: #FBE7E5; color: var(--err); }
-  #status.warn { background: #FFF1D6; color: var(--warn); }
-  #status button { margin-left: 8px; font: inherit; font-weight: 600; border: 1.5px solid currentColor; background: transparent; color: inherit; border-radius: 6px; padding: 3px 9px; cursor: pointer; }
-  h2 { font-size: 1rem; margin: 22px 0 8px; }
-  .list { background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-  .item { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 10px 14px; border-top: 1px solid var(--line); font-size: .92rem; }
-  .item:first-child { border-top: 0; }
-  .item b { font-weight: 700; }
-  .item .sub { color: var(--muted); font-size: .8rem; }
-  .item .mt { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .item .tag { text-align: right; font-size: .75rem; font-weight: 600; }
-  .tag.sent { color: var(--ok); } .tag.pending { color: var(--warn); }
-  .empty { padding: 16px; color: var(--muted); font-size: .9rem; }
-  @media (prefers-reduced-motion: no-preference) { button.primary { transition: opacity .15s; } }
-</style>
-</head>
-<body>
-<header>
-  <h1>Vehicle Entry</h1>
-  <p>Saves straight to the Google Sheet</p>
-</header>
-
+:root{--bg:#E9EDEF;--ink:#14232B;--muted:#5B6B73;--line:#C9D2D6;--accent:#1856C4;--ok:#1E7B3A;--warn:#9A5B00;--err:#B3261E}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+header{background:var(--ink);color:#fff;padding:14px 20px}header h1{margin:0;font-size:1.2rem}header p{margin:2px 0 0;font-size:.8rem;color:#A9BAC2}
+main{max-width:560px;margin:0 auto;padding:14px}
+.box{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+label{display:block;font-size:.82rem;font-weight:600;margin:10px 0 4px}label:first-child{margin-top:0}
+input,select{width:100%;font:inherit;font-size:1.02rem;padding:11px;border:1.5px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg button{font:inherit;font-weight:700;font-size:.9rem;padding:11px 4px;border:1.5px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
+.veh{text-transform:uppercase;font-weight:600;letter-spacing:1px}.kg{font-size:1.8rem;font-weight:700;padding:9px 12px}
+.primary{width:100%;margin-top:14px;font:inherit;font-size:1.1rem;font-weight:700;padding:14px;border:0;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer}
+.primary:disabled,.b:disabled{opacity:.6}
+.b{font:inherit;font-weight:700;font-size:.92rem;padding:10px 14px;border-radius:8px;border:1.5px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+.b.g{background:#fff;color:var(--ink);border-color:var(--line)}.b.d{background:#fff;color:var(--err);border-color:var(--err)}
+#st{display:none;margin-top:10px;padding:10px 12px;border-radius:8px;font-size:.9rem}#st.show{display:block}
+#st.ok{background:#E3F3E8;color:var(--ok)}#st.err{background:#FBE7E5;color:var(--err)}#st.warn{background:#FFF1D6;color:var(--warn)}
+#st .b{margin-left:8px;padding:4px 10px;font-size:.82rem}
+.bar{display:grid;grid-template-columns:1fr 130px;gap:8px;margin-bottom:8px}
+.sum{font-size:.84rem;color:var(--muted);margin:0 0 8px}
+.row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px;cursor:pointer}
+.row.p{border-style:dashed;cursor:default}
+.row b{font-size:1rem}.sub{font-size:.8rem;color:var(--muted);overflow-wrap:anywhere}.r{text-align:right}.r b{font-variant-numeric:tabular-nums}
+.tag{font-size:.7rem;font-weight:700;color:var(--muted)}.tag.p{color:var(--warn)}
+.empty{text-align:center;color:var(--muted);padding:20px}
+dialog{border:0;border-radius:12px;padding:16px;width:min(520px,94vw);max-height:94vh}dialog::backdrop{background:rgba(0,0,0,.5)}
+.acts{display:flex;gap:8px;margin-top:14px}.acts .b{flex:1}
+</style></head><body>
+<header><h1>Vehicle Entry</h1><p id="sync">Not synced yet</p></header>
 <main>
-  <form id="f" autocomplete="off" novalidate>
-    <div class="field">
-      <label for="veh">Vehicle number</label>
-      <input id="veh" name="veh" inputmode="text" autocapitalize="characters" placeholder="TN 32 AB 1234" required>
-    </div>
-    <div class="field">
-      <label for="invoice">Invoice number</label>
-      <input id="invoice" name="invoice" inputmode="text" required>
-      <div class="hint" id="invHint"></div>
-    </div>
-    <div class="row">
-      <div class="field">
-        <label for="date">Date</label>
-        <input id="date" name="date" type="date" required>
-      </div>
-      <div class="field">
-        <label for="time">Time</label>
-        <input id="time" name="time" type="time" required>
-      </div>
-    </div>
-    <div class="field">
-      <label for="mt">Quantity (MT)</label>
-      <input id="mt" name="mt" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0.00" required>
-    </div>
-    <button class="primary" id="save" type="submit">Save entry</button>
-    <div id="status" role="status" aria-live="polite"></div>
-  </form>
-
-  <h2>Entered on this device</h2>
-  <div class="list" id="recent"></div>
+<div class="box">
+  <label>Movement type</label><div class="seg" id="seg"></div>
+  <label for="name">Name</label><input id="name" list="names" autocomplete="off">
+  <div class="g2"><div><label for="veh">Vehicle no</label><input id="veh" class="veh" autocapitalize="characters" autocomplete="off"></div>
+  <div><label for="inv">Invoice no</label><input id="inv" autocomplete="off"></div></div>
+  <label for="kg">Quantity (KG)</label><input id="kg" class="kg" type="number" inputmode="decimal" min="0" step="any" placeholder="0">
+  <div class="g2"><div><label for="date">Date</label><input id="date" type="date"></div><div><label for="time">Time</label><input id="time" type="time"></div></div>
+  <button class="primary" id="save">Save entry</button><div id="st" role="status" aria-live="polite"></div>
+</div>
+<div class="bar"><input id="q" type="search" placeholder="Search vehicle, invoice, name…"><select id="per"><option value="7">Last 7 days</option><option value="0">Today</option><option value="all">All entries</option></select></div>
+<p class="sum" id="sum"></p><div id="list"></div><button class="b g" id="more" style="width:100%" hidden>Show more</button>
 </main>
-
+<datalist id="names"></datalist>
+<dialog id="dlg"><h2 style="margin:0 0 6px;font-size:1.1rem">Edit entry</h2>
+  <label>Movement type</label><div class="seg" id="eseg"></div>
+  <label for="e_name">Name</label><input id="e_name" list="names" autocomplete="off">
+  <div class="g2"><div><label for="e_veh">Vehicle no</label><input id="e_veh" class="veh" autocapitalize="characters"></div><div><label for="e_inv">Invoice no</label><input id="e_inv"></div></div>
+  <label for="e_kg">Quantity (KG)</label><input id="e_kg" class="kg" type="number" inputmode="decimal" min="0" step="any">
+  <div class="g2"><div><label for="e_date">Date</label><input id="e_date" type="date"></div><div><label for="e_time">Time</label><input id="e_time" type="time"></div></div>
+  <div class="acts"><button class="b" id="e_s">Save</button><button class="b g" id="e_x">Cancel</button><button class="b d" id="e_d">Delete</button></div>
+  <div id="e_st" style="color:var(--err);font-size:.88rem;margin-top:8px"></div>
+</dialog>
 <script>
-/* ====== SET THIS after deploying Code.gs as a web app ====== */
+/* ====== SET THIS to your web app link (Deploy > Manage deployments) ====== */
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuJASoLxHhHhdaR55VOuOQWqX2Q0GY7FrYFq-Ii9-Rz1Az15FBmvX3i_LAlzT_OI0y/exec";
-/* ========================================================== */
-
-const $ = id => document.getElementById(id);
-const LS_RECENT = "veh_recent_v1";
-const LS_CODE   = "veh_code_v1";
-
-const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
-const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
-
-let recent = load(LS_RECENT, []);   // [{veh, invoice, date, time, mt, sent, id}]
-
-function nowDefaults() {
-  const d = new Date(), p = n => String(n).padStart(2, "0");
-  $("date").value = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-  $("time").value = `${p(d.getHours())}:${p(d.getMinutes())}`;
-}
-
-function show(msg, kind, actionLabel, action) {
-  const s = $("status");
-  s.className = "show " + kind;
-  s.textContent = msg;
-  if (actionLabel) {
-    const b = document.createElement("button");
-    b.type = "button"; b.textContent = actionLabel; b.onclick = action;
-    s.appendChild(b);
-  }
-}
-const hide = () => { $("status").className = ""; };
-
-function fmtDate(iso) { const [y, m, d] = iso.split("-"); return `${d}-${m}-${y}`; }
-
-function render() {
-  const box = $("recent");
-  box.textContent = "";
-  if (!recent.length) { box.innerHTML = '<div class="empty">No entries yet.</div>'; return; }
-  recent.slice(0, 15).forEach(r => {
-    const el = document.createElement("div");
-    el.className = "item";
-    const l = document.createElement("div");
-    const b = document.createElement("b"); b.textContent = r.veh;
-    const sub = document.createElement("div"); sub.className = "sub";
-    sub.textContent = `Inv ${r.invoice} · ${fmtDate(r.date)} ${r.time}`;
-    l.append(b, sub);
-    const rt = document.createElement("div");
-    const mt = document.createElement("div"); mt.className = "mt"; mt.textContent = Number(r.mt).toFixed(2) + " MT";
-    const tag = document.createElement("div");
-    tag.className = "tag " + (r.sent ? "sent" : "pending");
-    tag.textContent = r.sent ? "Saved" : "Not sent yet";
-    rt.append(mt, tag);
-    el.append(l, rt);
-    box.appendChild(el);
-  });
-}
-
-async function send(entry, allowDuplicate) {
-  const payload = { ...entry, code: load(LS_CODE, ""), allowDuplicate: !!allowDuplicate };
-  const res = await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
-  return res.json();
-}
-
-async function submitEntry(entry, allowDuplicate) {
-  const btn = $("save");
-  btn.disabled = true; btn.textContent = "Saving…";
-  try {
-    const r = await send(entry, allowDuplicate);
-    if (r.ok) {
-      entry.sent = true; save(LS_RECENT, recent); render();
-      show(`Saved to the sheet (row ${r.row}).`, "ok");
-      $("f").reset(); nowDefaults(); $("veh").focus();
-      return;
-    }
-    if (r.error === "unauthorized") {
-      const c = prompt("Enter the access code");
-      if (c) { save(LS_CODE, c); return submitEntry(entry, allowDuplicate); }
-      show("Access code needed.", "err");
-    } else if (r.error === "duplicate") {
-      // remove the unsent copy, offer a deliberate override
-      show(r.message || "This invoice is already in the sheet.", "warn", "Save anyway", () => submitEntry(entry, true));
-    } else {
-      show(r.error || "The sheet rejected this entry.", "err");
-      dropIfUnsent(entry);
-    }
-  } catch (e) {
-    show("No connection. The entry is kept on this device.", "warn", "Retry", retryPending);
-    $("f").reset(); nowDefaults();
-  } finally {
-    btn.disabled = false; btn.textContent = "Save entry";
-  }
-}
-
-function dropIfUnsent(entry) {
-  recent = recent.filter(x => x !== entry); save(LS_RECENT, recent); render();
-}
-
-async function retryPending() {
-  const pend = recent.filter(r => !r.sent).reverse();
-  if (!pend.length) return;
-  let done = 0;
-  for (const r of pend) {
-    try {
-      const x = await send(r, false);
-      if (x.ok) { r.sent = true; done++; }
-      else if (x.error === "duplicate") { r.sent = true; done++; }  // already in sheet
-    } catch { break; }
-  }
-  save(LS_RECENT, recent); render();
-  if (done) show(`${done} pending entr${done > 1 ? "ies" : "y"} saved.`, "ok");
-}
-
-$("f").addEventListener("submit", e => {
-  e.preventDefault(); hide();
-  if (SCRIPT_URL.startsWith("PASTE_")) { show("Set SCRIPT_URL in index.html first.", "err"); return; }
-
-  const entry = {
-    veh: $("veh").value.trim().toUpperCase(),
-    invoice: $("invoice").value.trim(),
-    date: $("date").value,
-    time: $("time").value,
-    mt: parseFloat($("mt").value)
-  };
-  if (!entry.veh || !entry.invoice || !entry.date || !entry.time || !(entry.mt >= 0)) {
-    show("Fill in all five fields.", "err"); return;
-  }
-  const dup = recent.find(r => r.invoice === entry.invoice);
-  if (dup && !confirm(`Invoice ${entry.invoice} was already entered on this device (${dup.veh}). Add again?`)) return;
-
-  entry.sent = false;
-  recent.unshift(entry);
-  recent = recent.slice(0, 50);
-  save(LS_RECENT, recent); render();
-  submitEntry(entry, false);
-});
-
-$("invoice").addEventListener("input", () => {
-  const v = $("invoice").value.trim();
-  const hit = v && recent.find(r => r.invoice === v);
-  $("invHint").textContent = hit ? "Already entered on this device" : "";
-  $("invHint").className = "hint" + (hit ? " bad" : "");
-});
-
-window.addEventListener("online", retryPending);
-nowDefaults(); render(); retryPending();
-</script>
-</body>
-</html>
+/* ========================================================================= */
+const $=id=>document.getElementById(id),p2=n=>String(n).padStart(2,"0"),MV=["LOADING","UNLOADING","SHIFTING"];
+const ld=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
+let items=ld("v2_items",[]),pend=ld("v2_pend",[]),shown=40,editing=null;
+function el(t,c,x){const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function seg(box,def){let v=def;const bs=MV.map(m=>{const b=el("button","",m[0]+m.slice(1).toLowerCase());b.type="button";b.onclick=()=>set(m);box.appendChild(b);return[m,b]});
+  const set=m=>{v=m;bs.forEach(([k,b])=>b.setAttribute("aria-pressed",k===m))};set(def);return{get:()=>v,set}}
+const sMain=seg($("seg"),ld("v2_mv","LOADING")),sEdit=seg($("eseg"),"LOADING");
+const today=()=>{const d=new Date();return`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`},nowT=()=>{const d=new Date();return`${p2(d.getHours())}:${p2(d.getMinutes())}`};
+const fd=s=>{const[y,m,d]=s.split("-");return`${d}-${m}-${y}`},kg=n=>Number(n).toLocaleString("en-IN",{maximumFractionDigits:2});
+function msg(m,k,l,f){const s=$("st");s.className="show "+k;s.textContent=m;if(l){const b=el("button","b g",l);b.type="button";b.onclick=f;s.appendChild(b)}}
+async function call(method,payload){const code=ld("v2_code","");let url=SCRIPT_URL,o={method};
+  if(method==="GET")url+="?action=list&code="+encodeURIComponent(code);else o.body=JSON.stringify({...payload,code});
+  const r=await(await fetch(url,o)).json();
+  if(r.error==="unauthorized"){const c=prompt("Enter the access code");if(c){sv("v2_code",c);return call(method,payload)}}return r}
+function fields(p){return{name:$(p+"name").value,veh:$(p+"veh").value,inv:$(p+"inv").value,kg:$(p+"kg").value,date:$(p+"date").value,time:$(p+"time").value}}
+function valid(f,m){if(!f.veh.trim()||f.kg===""||!(parseFloat(f.kg)>=0)||!f.date||!f.time){m("Fill in vehicle no, quantity, date and time.");return false}return true}
+function resetForm(){["name","veh","inv","kg"].forEach(k=>$(k).value="");$("date").value=today();$("time").value=nowT()}
+async function refresh(q){
+  if(SCRIPT_URL.startsWith("PASTE_")){msg("Set SCRIPT_URL in index.html first.","err");return}
+  try{await flush();const r=await call("GET");
+    if(r.ok){items=r.items;sv("v2_items",items);$("sync").textContent="Synced "+nowT();render()}else if(!q)msg(r.error||"Could not load.","err")}
+  catch{$("sync").textContent="Offline, showing saved copy"}}
+async function flush(){if(!pend.length)return;let n=0;
+  for(const p of pend.slice()){try{const r=await call("POST",{action:"add",...p,allowDuplicate:true});if(r.ok){pend=pend.filter(x=>x!==p);n++}else if(r.error&&r.error!=="duplicate")break}catch{break}}
+  sv("v2_pend",pend);if(n)msg(n+" waiting "+(n>1?"entries":"entry")+" saved.","ok")}
+function render(){
+  const names=[...new Set(items.map(i=>i.name).filter(Boolean))].sort();$("names").textContent="";names.forEach(n=>{const o=el("option");o.value=n;$("names").appendChild(o)});
+  const per=$("per").value,q=$("q").value.trim().toLowerCase(),t0=new Date();t0.setHours(0,0,0,0);
+  let l=pend.map(p=>({...p,pend:1})).concat(items);
+  if(per!=="all"){const from=new Date(+t0-Number(per)*864e5);l=l.filter(i=>new Date(i.date+"T00:00")>=from)}
+  if(q)l=l.filter(i=>[i.veh,i.inv,i.name,i.mv].join(" ").toLowerCase().includes(q));
+  l.sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  const tot={};l.forEach(i=>tot[i.mv]=(tot[i.mv]||0)+Number(i.kg));
+  $("sum").textContent=l.length?`${l.length} entries · `+Object.entries(tot).map(([k,v])=>k[0]+k.slice(1).toLowerCase()+" "+kg(v)+" kg").join(" · "):"";
+  const box=$("list");box.textContent="";
+  if(!l.length)box.appendChild(el("div","empty","No entries found."));
+  l.slice(0,shown).forEach(i=>{const r=el("div","row"+(i.pend?" p":"")),a=el("div"),b=el("div","r");
+    a.append(el("b","",i.veh+(i.name?" · "+i.name:"")),el("div","sub",`${fd(i.date)} ${i.time}${i.inv?" · Inv "+i.inv:""}`));
+    b.append(el("b","",kg(i.kg)+" kg"),el("div","tag"+(i.pend?" p":""),i.pend?"Not sent yet":i.mv));r.append(a,b);
+    if(!i.pend)r.onclick=()=>openEdit(i);box.appendChild(r)});
+  $("more").hidden=l.length<=shown}
+$("more").onclick=()=>{shown+=40;render()};$("q").oninput=()=>{shown=40;render()};$("per").onchange=()=>{shown=40;render()};
+async function submit(){
+  $("st").className="";if(SCRIPT_URL.startsWith("PASTE_")){msg("Set SCRIPT_URL in index.html first.","err");return}
+  const f=fields("");if(!valid(f,m=>msg(m,"err")))return;const e={...f,mv:sMain.get()};sv("v2_mv",e.mv);
+  const b=$("save");b.disabled=true;b.textContent="Saving…";
+  try{const r=await call("POST",{action:"add",...e});
+    if(r.ok){items.push(r.item);sv("v2_items",items);msg("Saved.","ok");resetForm();$("veh").focus();render()}
+    else if(r.error==="duplicate")msg(r.message,"warn","Save anyway",async()=>{const x=await call("POST",{action:"add",...e,allowDuplicate:true});if(x.ok){items.push(x.item);sv("v2_items",items);msg("Saved.","ok");resetForm();render()}else msg(x.error,"err")});
+    else msg(r.error||"The sheet rejected this entry.","err")}
+  catch{pend.unshift(e);sv("v2_pend",pend);msg("No connection. Entry kept on this phone and will send automatically.","warn");resetForm();render()}
+  b.disabled=false;b.textContent="Save entry"}
+$("save").onclick=submit;
+function openEdit(i){editing=i;sEdit.set(i.mv);$("e_name").value=i.name;$("e_veh").value=i.veh;$("e_inv").value=i.inv;$("e_kg").value=i.kg;$("e_date").value=i.date;$("e_time").value=i.time;$("e_st").textContent="";$("dlg").showModal()}
+$("e_x").onclick=()=>$("dlg").close();
+async function edit(allow){const f=fields("e_");if(!valid(f,m=>$("e_st").textContent=m))return;$("e_s").disabled=true;$("e_st").textContent="";
+  try{const r=await call("POST",{action:"edit",id:editing.id,...f,mv:sEdit.get(),allowDuplicate:allow});
+    if(r.ok){items[items.findIndex(x=>x.id===editing.id)]=r.item;sv("v2_items",items);$("dlg").close();render()}
+    else if(r.error==="duplicate"){if(confirm(r.message+". Save anyway?"))return edit(true)}
+    else $("e_st").textContent=r.error||"Could not save."}
+  catch{$("e_st").textContent="No connection. Try again."}$("e_s").disabled=false}
+$("e_s").onclick=()=>edit(false);
+$("e_d").onclick=async()=>{if(!confirm(`Delete ${editing.veh} (${fd(editing.date)} ${editing.time}, ${kg(editing.kg)} kg)? This removes the row from the sheet.`))return;
+  $("e_d").disabled=true;try{const r=await call("POST",{action:"delete",id:editing.id});
+    if(r.ok||/not found/i.test(r.error||"")){items=items.filter(x=>x.id!==editing.id);sv("v2_items",items);$("dlg").close();render()}else $("e_st").textContent=r.error||"Could not delete."}
+  catch{$("e_st").textContent="No connection. Try again."}$("e_d").disabled=false};
+window.addEventListener("online",()=>refresh(true));
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&!$("dlg").open)refresh(true)});
+setInterval(()=>{if(!$("dlg").open)refresh(true)},9e4);
+resetForm();render();refresh();
+</script></body></html>
